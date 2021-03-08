@@ -2,16 +2,26 @@ package falcon
 
 import (
 	"fmt"
+	"net/url"
 	"reflect"
+
+	"golang.org/x/oauth2"
 )
 
 // ErrorExplain extracts as much information from the error object as possible and returns as human readable string. This is useful for developers as gofalcon/falcon/client library is swagger generated and various error classes do not adhere to a common interface.
 func ErrorExplain(apiError error) string {
+	if urlError, ok := apiError.(*url.Error); ok {
+	        cause := urlError.Unwrap()
+		if _, ok := cause.(*oauth2.RetrieveError); ok {
+			return apiError.Error()
+		}
+	}
+
 	explained := tryErrorExplain(apiError)
 	if explained != "" {
 		return explained
 	}
-	return fmt.Sprintf("%#v", apiError)
+	return fmt.Sprintf("%v", apiError)
 }
 
 // Common interface for *Payload structures in the gofalcon/falcon/client library.
@@ -28,6 +38,9 @@ func ErrorExtractPayload(apiError error) CommonPayload {
 	}
 	errorStruct := errorValue.Elem()
 	payloadValue := errorStruct.FieldByName("Payload")
+	if !payloadValue.IsValid() {
+		return nil
+	}
 	if !payloadValue.CanInterface() {
 		// This error struct does not have 'Payload' member
 		return nil

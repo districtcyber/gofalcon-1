@@ -19,6 +19,7 @@ import (
 func main() {
 	clientId := flag.String("client-id", os.Getenv("FALCON_CLIENT_ID"), "Client ID for accessing CrowdStrike Falcon Platform (default taken from FALCON_CLIENT_ID env)")
 	clientSecret := flag.String("client-secret", os.Getenv("FALCON_CLIENT_SECRET"), "Client Secret for accessing CrowdStrike Falcon Platform (default taken from FALCON_CLIENT_SECRET)")
+	clientCloud := flag.String("cloud", os.Getenv("FALCON_CLOUD"), "Falcon cloud abbreviation (us-1, us-2, eu-1, us-gov-1)")
 	osName := flag.String("os-name", "", "Name of the operating system")
 	osVersion := flag.String("os-version", "", "Versin of the operating system")
 	all := flag.Bool("all", false, "Download all sensors")
@@ -26,15 +27,18 @@ func main() {
 	flag.Parse()
 
 	if *clientId == "" {
-		*clientId = promptUser("Please provide your Falcon Client ID")
+		*clientId = promptUser(`Missing FALCON_CLIENT_ID environment variable. Please provide your OAuth2 API Client ID for authentication with CrowdStrike Falcon platform. Establishing and retrieving OAuth2 API credentials can be performed at https://falcon.crowdstrike.com/support/api-clients-and-keys.
+Falcon Client ID`)
 	}
 	if *clientSecret == "" {
-		*clientSecret = promptUser("Please provide your Falcon Client Secret")
+		*clientSecret = promptUser(`Missing FALCON_CLIENT_SECRET environment variable. Please provide your OAuth2 API Client Secret for authentication with CrowdStrike Falcon platform. Establishing and retrieving OAuth2 API credentials can be performed at https://falcon.crowdstrike.com/support/api-clients-and-keys.
+Falcon Client Secret`)
 	}
 
 	client, err := falcon.NewClient(&falcon.ApiConfig{
 		ClientId:     *clientId,
 		ClientSecret: *clientSecret,
+		Cloud:        falcon.Cloud(*clientCloud),
 		Context:      context.Background(),
 	})
 	if err != nil {

@@ -2,8 +2,12 @@ APIs
 CrowdScore
 CrowdStrike
 CrowdStrike's
+detections
 Golang
 initialisation
+NewClient
 SDK
 gofalcon
+oauth
+OAuth
 pre
